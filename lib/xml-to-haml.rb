@@ -7,17 +7,21 @@ require 'rexml/document'
 class XMLtoHAML
   include REXML
 
-  def initialize()
+  def initialize(s)
     doc = Document.new(s)
-    xml_to_haml(doc)
+    @haml = xml_to_haml(doc)
+  end
+
+  def to_s
+    @haml
   end
 
   def xml_to_haml(nodex, indent ='')
 
-    nodex.elements.each do |node|
+    buffer = nodex.elements.map do |node|
 
       attributex = ' '
-      buffer = indent + '%' + node.name
+      buffer = "%s" % [indent + '%' + node.name]
 
       if node.attributes.size > 0 then
         alist = Array.new(node.attributes.size)
@@ -29,10 +33,15 @@ class XMLtoHAML
         attributex = '{' + alist.join(",")  + '} ' 
       end
    
-      buffer +=  attributex + node.text if not node.text.nil?  
-      puts buffer
-      xml_to_haml(node, indent + '  ')
+      buffer +=  "%s" % [attributex + node.text] if not node.text.nil?  
+      buffer += "\n"
+      buffer += xml_to_haml(node, indent + '  ')
+
+      buffer
     end
+
+    buffer.join
   end
 
 end
+
